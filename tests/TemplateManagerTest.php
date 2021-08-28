@@ -13,6 +13,7 @@ use App\Repository\MeetingPointRepository;
 use App\TemplateManager;
 use DateTime;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 class TemplateManagerTest extends TestCase
 {
@@ -59,6 +60,30 @@ class TemplateManagerTest extends TestCase
             END,
             $message->content
         );
+    }
+
+    public function test_it_will_throw_an_exception_if_a_dependency_is_missing(): void
+    {
+        $lesson = $this->createLesson(
+            new MeetingPoint(1, "http://lambda.to", "paris 5eme"),
+            new Instructor(1, "jean", "rock"),
+            '2021-01-01 12:00:00',
+            '2021-01-01 13:00:00',
+        );
+
+        $template = new Template(1, '', '[lesson:meeting_point]');
+
+        try {
+            (new TemplateManager(ApplicationContext::getInstance()))
+                ->getTemplateComputed($template, ['lesson' => $lesson]);
+
+            self::fail(sprintf('The %s should be missing', MeetingPointRepository::class));
+        } catch (RuntimeException $e) {
+            self::assertEquals(
+                sprintf('The TemplateManager is missing the dependency %s', MeetingPointRepository::class),
+                $e->getMessage()
+            );
+        }
     }
 
     public function setUp(): void

@@ -7,11 +7,12 @@ use App\Entity\Placeholder;
 use App\Entity\Template;
 use ReflectionClass;
 use ReflectionMethod;
+use RuntimeException;
 
 class TemplateManager
 {
     private ApplicationContext $applicationContext;
-    private array $dependencies;
+    private array $dependencies = [];
 
     public function __construct(ApplicationContext $applicationContext)
     {
@@ -27,6 +28,10 @@ class TemplateManager
 
     public function getTemplateComputed(Template $template, array $data): Template
     {
+        if (!isset($data['user'])) {
+            $data['user'] = $this->applicationContext->getCurrentUser();
+        }
+
         $computedTemplate = clone $template;
         $computedTemplate->subject = $this->computeText($computedTemplate->subject, $data);
         $computedTemplate->content = $this->computeText($computedTemplate->content, $data);
@@ -52,23 +57,10 @@ class TemplateManager
 
     private function computeText($text, array $data): string
     {
-        if (!isset($data['user'])) {
-            $data['user'] = $this->applicationContext->getCurrentUser();
-        }
-
         foreach ($this->findPlaceholders($text) as $placeholder) {
             $object = $data[$placeholder->objectName] ?? null;
 
             if ($object && method_exists($object, $placeholder->getMethodName())) {
-
-                $reflection = new ReflectionMethod($object, $placeholder->getMethodName());
-
-                foreach ($reflection->getParameters() as $parameter) {
-                    if (!$this->hasDependency($parameter->getClass())) {
-                        break 2;
-                    }
-                }
-
                 $text = str_replace(
                     $placeholder,
                     $this->resolvePlaceholderValue($data[$placeholder->objectName], $placeholder->getMethodName()),
@@ -80,14 +72,14 @@ class TemplateManager
         return $text;
     }
 
-    private function hasDependency(ReflectionClass $reflectionClass): bool
-    {
-        return null !== $this->getDependency($reflectionClass);
-    }
-
     private function getDependency(ReflectionClass $reflectionClass)
     {
-        return $this->dependencies[$reflectionClass->getName()] ?: null;
+        if (!isset($this->dependencies[$reflectionClass->getName()])) {
+            throw new RuntimeException(sprintf('The TemplateManager is missing the dependency %s',
+                $reflectionClass->getName()));
+        }
+
+        return $this->dependencies[$reflectionClass->getName()];
     }
 
     private function resolvePlaceholderValue($object, string $methodName): string

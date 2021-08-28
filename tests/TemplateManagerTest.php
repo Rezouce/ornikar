@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Test;
 
@@ -13,8 +13,9 @@ use App\Repository\LessonRepository;
 use App\Repository\MeetingPointRepository;
 use App\TemplateManager;
 use DateTime;
+use PHPUnit\Framework\TestCase;
 
-class TemplateManagerTest extends \PHPUnit_Framework_TestCase
+class TemplateManagerTest extends TestCase
 {
     public function test_it_replaces_the_placeholders_by_the_lesson_data(): void
     {

@@ -3,7 +3,6 @@
 namespace App;
 
 use App\Context\ApplicationContext;
-use App\Entity\Instructor;
 use App\Entity\Placeholder;
 use App\Entity\Template;
 use App\Repository\InstructorRepository;
@@ -79,14 +78,7 @@ class TemplateManager
             }
         }
 
-        return str_replace('[instructor_link]', $this->getInstructorLink($data), $text);
-    }
-
-    private function getInstructorLink(array $data): string
-    {
-        return ($data['instructor'] ?? null) instanceof Instructor
-            ? 'instructors/' . $data['instructor']->id . '-' . urlencode($data['instructor']->firstname)
-            : '';
+        return $text;
     }
 
     private function hasDependency(ReflectionClass $reflectionClass): bool

@@ -20,23 +20,17 @@ class TemplateManager
         $this->applicationContext = $applicationContext;
     }
 
-    public function getTemplateComputed(Template $tpl, array $data)
+    public function getTemplateComputed(Template $tpl, array $data): Template
     {
-        if (!$tpl) {
-            throw new \RuntimeException('no tpl given');
-        }
-
-        $replaced = clone($tpl);
+        $replaced = clone $tpl;
         $replaced->subject = $this->computeText($replaced->subject, $data);
         $replaced->content = $this->computeText($replaced->content, $data);
 
         return $replaced;
     }
 
-    private function computeText($text, array $data)
+    private function computeText($text, array $data): string
     {
-        $APPLICATION_CONTEXT = $this->applicationContext;
-
         $lesson = (isset($data['lesson']) and $data['lesson'] instanceof Lesson) ? $data['lesson'] : null;
 
         if ($lesson) {
@@ -103,7 +97,7 @@ class TemplateManager
          * USER
          * [user:*]
          */
-        $_user = (isset($data['user']) and ($data['user'] instanceof Learner)) ? $data['user'] : $APPLICATION_CONTEXT->getCurrentUser();
+        $_user = (isset($data['user']) and ($data['user'] instanceof Learner)) ? $data['user'] : $this->applicationContext->getCurrentUser();
         if ($_user) {
             (strpos($text, '[user:first_name]') !== false) and $text = str_replace('[user:first_name]',
                 ucfirst(strtolower($_user->firstname)), $text);

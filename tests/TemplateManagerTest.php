@@ -41,8 +41,8 @@ class TemplateManagerTest extends TestCase
             END
         );
 
-        $message = (new TemplateManager(ApplicationContext::getInstance()))->getTemplateComputed($template,
-            ['lesson' => $lesson]);
+        $message = (new TemplateManager(ApplicationContext::getInstance()))
+            ->getTemplateComputed($template, ['lesson' => $lesson]);
 
         $this->assertEquals('Votre leçon de conduite avec jean', $message->subject);
         $this->assertEquals(

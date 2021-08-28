@@ -26,13 +26,13 @@ class TemplateManager
         $this->instructorRepository = $instructorRepository;
     }
 
-    public function getTemplateComputed(Template $tpl, array $data): Template
+    public function getTemplateComputed(Template $template, array $data): Template
     {
-        $replaced = clone $tpl;
-        $replaced->subject = $this->computeText($replaced->subject, $data);
-        $replaced->content = $this->computeText($replaced->content, $data);
+        $computedTemplate = clone $template;
+        $computedTemplate->subject = $this->computeText($computedTemplate->subject, $data);
+        $computedTemplate->content = $this->computeText($computedTemplate->content, $data);
 
-        return $replaced;
+        return $computedTemplate;
     }
 
     private function computeText($text, array $data): string
@@ -66,7 +66,7 @@ class TemplateManager
 
     private function computeLesson($text, Lesson $lesson): string
     {
-        $instructorOfLesson = $this->instructorRepository->getById($lesson->instructorId);
+        $instructor = $this->instructorRepository->getById($lesson->instructorId);
 
         return str_replace([
             '[lesson:instructor_link]',
@@ -74,8 +74,8 @@ class TemplateManager
             '[lesson:summary_html]',
             '[lesson:summary]',
         ], [
-            $this->getInstructorLink(['instructor' => $instructorOfLesson]),
-            $this->getInstructorName(['instructor' => $instructorOfLesson]),
+            $this->getInstructorLink(['instructor' => $instructor]),
+            $this->getInstructorFirstName(['instructor' => $instructor]),
             Lesson::renderHtml($lesson),
             Lesson::renderText($lesson),
         ], $text);
@@ -88,7 +88,7 @@ class TemplateManager
             : '';
     }
 
-    private function getInstructorName(array $data): string
+    private function getInstructorFirstName(array $data): string
     {
         return ($data['instructor'] ?? null) instanceof Instructor
             ? $data['instructor']->firstname

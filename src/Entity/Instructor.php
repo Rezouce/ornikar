@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -14,5 +14,15 @@ class Instructor
         $this->id = $id;
         $this->firstname = $firstname;
         $this->lastname = $lastname;
+    }
+
+    public function getName(): string
+    {
+        return $this->firstname;
+    }
+
+    public function getLink(): string
+    {
+        return 'instructors/' . $this->id . '-' . urlencode($this->firstname);
     }
 }

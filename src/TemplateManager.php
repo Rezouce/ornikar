@@ -4,11 +4,12 @@ namespace App;
 
 use App\Context\ApplicationContext;
 use App\Entity\Instructor;
-use App\Entity\Lesson;
 use App\Entity\Placeholder;
 use App\Entity\Template;
 use App\Repository\InstructorRepository;
 use App\Repository\MeetingPointRepository;
+use ReflectionClass;
+use ReflectionMethod;
 
 class TemplateManager
 {
@@ -61,19 +62,24 @@ class TemplateManager
             $object = $data[$placeholder->objectName] ?? null;
 
             if ($object && method_exists($object, $placeholder->getMethodName())) {
+
+                $reflection = new ReflectionMethod($object, $placeholder->getMethodName());
+
+                foreach ($reflection->getParameters() as $parameter) {
+                    if (!$this->hasDependency($parameter->getClass())) {
+                        break 2;
+                    }
+                }
+
                 $text = str_replace(
                     $placeholder,
-                    $data[$placeholder->objectName]->{$placeholder->getMethodName()}(),
+                    $this->resolvePlaceholderValue($data[$placeholder->objectName], $placeholder->getMethodName()),
                     $text
                 );
             }
         }
 
         $lesson = $data['lesson'] ?: null;
-
-        if ($lesson instanceof Lesson) {
-            $text = $this->computeLesson($text, $lesson);
-        }
 
         if ($lesson->hasMeetingPoint() && strpos($text, '[lesson:meeting_point]') !== false) {
             $meetingPoint = $this->meetingPointRepository->getById($lesson->meetingPointId);
@@ -84,19 +90,6 @@ class TemplateManager
         return str_replace('[instructor_link]', $this->getInstructorLink($data), $text);
     }
 
-    private function computeLesson($text, Lesson $lesson): string
-    {
-        $instructor = $this->instructorRepository->getById($lesson->instructorId);
-
-        return str_replace([
-            '[lesson:instructor_link]',
-            '[lesson:instructor_name]',
-        ], [
-            $this->getInstructorLink(['instructor' => $instructor]),
-            $this->getInstructorFirstName(['instructor' => $instructor]),
-        ], $text);
-    }
-
     private function getInstructorLink(array $data): string
     {
         return ($data['instructor'] ?? null) instanceof Instructor
@@ -104,10 +97,29 @@ class TemplateManager
             : '';
     }
 
-    private function getInstructorFirstName(array $data): string
+    private function hasDependency(ReflectionClass $reflectionClass): bool
     {
-        return ($data['instructor'] ?? null) instanceof Instructor
-            ? $data['instructor']->firstname
-            : '';
+        return null !== $this->getDependency($reflectionClass);
+    }
+
+    private function getDependency(ReflectionClass $reflectionClass)
+    {
+        return [
+            MeetingPointRepository::class => $this->meetingPointRepository,
+            InstructorRepository::class => $this->instructorRepository,
+        ][$reflectionClass->getName()] ?: null;
+    }
+
+    private function resolvePlaceholderValue($object, string $methodName): string
+    {
+        $reflection = new ReflectionMethod($object, $methodName);
+
+        $dependencies = [];
+
+        foreach ($reflection->getParameters() as $parameter) {
+            $dependencies[] = $this->getDependency($parameter->getClass());
+        }
+
+        return $reflection->invoke($object, ...$dependencies);
     }
 }

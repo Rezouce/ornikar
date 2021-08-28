@@ -2,7 +2,9 @@
 
 namespace Test;
 
+use App\Entity\Instructor;
 use App\Entity\Lesson;
+use App\Repository\InstructorRepository;
 use DateTime;
 use PHPUnit\Framework\TestCase;
 
@@ -41,5 +43,25 @@ class LessonTest extends TestCase
         $lesson = new Lesson(1, 1, 1, new DateTime('2021-08-28 01:02:03'), new DateTime('2021-08-29 05:06:07'));
 
         self::assertEquals('<p>1</p>', $lesson->getSummaryHtml());
+    }
+
+    public function test_it_can_return_its_instructor_name(): void
+    {
+        $repository = InstructorRepository::getInstance();
+        $repository->save(new Instructor(1, 'John', 'Doe'));
+
+        $lesson = new Lesson(1, 1, 1, new DateTime('2021-08-28 01:02:03'), new DateTime('2021-08-29 05:06:07'));
+
+        self::assertEquals('John', $lesson->getInstructorName($repository));
+    }
+
+    public function test_it_can_return_its_instructor_link(): void
+    {
+        $repository = InstructorRepository::getInstance();
+        $repository->save(new Instructor(1, 'John', 'Doe'));
+
+        $lesson = new Lesson(1, 1, 1, new DateTime('2021-08-28 01:02:03'), new DateTime('2021-08-29 05:06:07'));
+
+        self::assertEquals('instructors/1-John', $lesson->getInstructorLink($repository));
     }
 }

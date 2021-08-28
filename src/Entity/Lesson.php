@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Repository\InstructorRepository;
 use DateTime;
 
 class Lesson
@@ -54,5 +55,15 @@ class Lesson
     public function getEndTime(): string
     {
         return $this->end_time->format('H:i');
+    }
+
+    public function getInstructorName(InstructorRepository $repository): string
+    {
+        return $repository->getById($this->instructorId)->getName();
+    }
+
+    public function getInstructorLink(InstructorRepository $repository): string
+    {
+        return $repository->getById($this->instructorId)->getLink();
     }
 }

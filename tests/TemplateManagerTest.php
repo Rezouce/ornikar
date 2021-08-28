@@ -40,7 +40,8 @@ class TemplateManagerTest extends \PHPUnit_Framework_TestCase
             END
         );
 
-        $message = (new TemplateManager())->getTemplateComputed($template, ['lesson' => $lesson]);
+        $message = (new TemplateManager(ApplicationContext::getInstance()))->getTemplateComputed($template,
+            ['lesson' => $lesson]);
 
         $this->assertEquals('Votre leçon de conduite avec jean', $message->subject);
         $this->assertEquals(

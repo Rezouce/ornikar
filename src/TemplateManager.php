@@ -13,6 +13,13 @@ use App\Repository\MeetingPointRepository;
 
 class TemplateManager
 {
+    private ApplicationContext $applicationContext;
+
+    public function __construct(ApplicationContext $applicationContext)
+    {
+        $this->applicationContext = $applicationContext;
+    }
+
     public function getTemplateComputed(Template $tpl, array $data)
     {
         if (!$tpl) {
@@ -28,7 +35,7 @@ class TemplateManager
 
     private function computeText($text, array $data)
     {
-        $APPLICATION_CONTEXT = ApplicationContext::getInstance();
+        $APPLICATION_CONTEXT = $this->applicationContext;
 
         $lesson = (isset($data['lesson']) and $data['lesson'] instanceof Lesson) ? $data['lesson'] : null;
 

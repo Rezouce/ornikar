@@ -77,10 +77,53 @@ class TemplateManagerTest extends TestCase
             (new TemplateManager(ApplicationContext::getInstance()))
                 ->getTemplateComputed($template, ['lesson' => $lesson]);
 
-            self::fail(sprintf('The %s should be missing', MeetingPointRepository::class));
+            self::fail('The computation should have failed.');
         } catch (RuntimeException $e) {
             self::assertEquals(
                 sprintf('The TemplateManager is missing the dependency %s', MeetingPointRepository::class),
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function test_it_will_throw_an_exception_if_a_placeholder_value_cannot_be_resolved_because_the_object_is_missing_a_getter(
+    ): void
+    {
+        $lesson = $this->createLesson(
+            new MeetingPoint(1, "http://lambda.to", "paris 5eme"),
+            new Instructor(1, "jean", "rock"),
+            '2021-01-01 12:00:00',
+            '2021-01-01 13:00:00',
+        );
+
+        $template = new Template(1, '', '[lesson:missing_getter]');
+
+        try {
+            (new TemplateManager(ApplicationContext::getInstance()))
+                ->getTemplateComputed($template, ['lesson' => $lesson]);
+
+            self::fail('The computation should have failed.');
+        } catch (RuntimeException $e) {
+            self::assertEquals(
+                'The data "lesson" is missing a getter named "getMissingGetter".',
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function test_it_will_throw_an_exception_if_a_placeholder_value_cannot_be_resolved_because_the_object_is_missing_from_the_data(
+    ): void
+    {
+        $template = new Template(1, '', '[lesson:missing_getter]');
+
+        try {
+            (new TemplateManager(ApplicationContext::getInstance()))
+                ->getTemplateComputed($template, []);
+
+            self::fail('The computation should have failed.');
+        } catch (RuntimeException $e) {
+            self::assertEquals(
+                sprintf('The data "lesson" is missing.'),
                 $e->getMessage()
             );
         }

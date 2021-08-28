@@ -58,15 +58,25 @@ class TemplateManager
     private function computeText($text, array $data): string
     {
         foreach ($this->findPlaceholders($text) as $placeholder) {
-            $object = $data[$placeholder->objectName] ?? null;
-
-            if ($object && method_exists($object, $placeholder->getMethodName())) {
-                $text = str_replace(
-                    $placeholder,
-                    $this->resolvePlaceholderValue($data[$placeholder->objectName], $placeholder->getMethodName()),
-                    $text
+            if (!isset($data[$placeholder->objectName])) {
+                throw new RuntimeException(
+                    sprintf('The data "%s" is missing.', $placeholder->objectName)
                 );
             }
+
+            if (!method_exists($data[$placeholder->objectName], $placeholder->getMethodName())) {
+                throw new RuntimeException(sprintf(
+                    'The data "%s" is missing a getter named "%s".',
+                    $placeholder->objectName,
+                    $placeholder->getMethodName()
+                ));
+            }
+
+            $text = str_replace(
+                $placeholder,
+                $this->resolvePlaceholderValue($data[$placeholder->objectName], $placeholder->getMethodName()),
+                $text
+            );
         }
 
         return $text;
@@ -75,8 +85,9 @@ class TemplateManager
     private function getDependency(ReflectionClass $reflectionClass)
     {
         if (!isset($this->dependencies[$reflectionClass->getName()])) {
-            throw new RuntimeException(sprintf('The TemplateManager is missing the dependency %s',
-                $reflectionClass->getName()));
+            throw new RuntimeException(
+                sprintf('The TemplateManager is missing the dependency %s', $reflectionClass->getName())
+            );
         }
 
         return $this->dependencies[$reflectionClass->getName()];

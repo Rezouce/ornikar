@@ -2,7 +2,6 @@
 
 namespace Test;
 
-
 use App\Context\ApplicationContext;
 use App\Entity\Instructor;
 use App\Entity\Learner;
@@ -13,73 +12,73 @@ use App\Repository\InstructorRepository;
 use App\Repository\LessonRepository;
 use App\Repository\MeetingPointRepository;
 use App\TemplateManager;
+use DateTime;
 
 class TemplateManagerTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * Init the mocks
-     */
-    public function setUp()
+    public function test_it_replaces_the_placeholders_by_the_lesson_data(): void
     {
-        InstructorRepository::getInstance()->save(new Instructor(1, "jean", "rock"));
-        MeetingPointRepository::getInstance()->save(new MeetingPoint(1, "http://lambda.to", "paris 5eme"));
-        ApplicationContext::getInstance()->setCurrentUser(new Learner(1, "toto", "bob", "toto@bob.to"));
-
-    }
-
-    /**
-     * Closes the mocks
-     */
-    public function tearDown()
-    {
-    }
-
-    /**
-     * @test
-     */
-    public function test()
-    {
-        $expectedInstructor = InstructorRepository::getInstance()->getById(1);
-        $expectedMeetingPoint = MeetingPointRepository::getInstance()->getById(1);
-        $expectedUser = ApplicationContext::getInstance()->getCurrentUser();
-        $start_at = new \DateTime("2021-01-01 12:00:00");
-        $end_at = (clone $start_at)->add(new \DateInterval('PT1H'));
-
-        $lesson = new Lesson(1, 1, 1, $start_at, $end_at);
-        LessonRepository::getInstance()->save($lesson);
+        $lesson = $this->createLesson(
+            new MeetingPoint(1, "http://lambda.to", "paris 5eme"),
+            new Instructor(1, "jean", "rock"),
+            '2021-01-01 12:00:00',
+            '2021-01-01 13:00:00',
+        );
 
         $template = new Template(
             1,
             'Votre leçon de conduite avec [lesson:instructor_name]',
-            "
-Bonjour [user:first_name],
-
-La reservation du [lesson:start_date] de [lesson:start_time] à [lesson:end_time] avec [lesson:instructor_name] a bien été prise en compte!
-Voici votre point de rendez-vous: [lesson:meeting_point].
-
-Bien cordialement,
-
-L'équipe Ornikar
-");
-        $templateManager = new TemplateManager();
-
-        $message = $templateManager->getTemplateComputed(
-            $template,
-            [
-                'lesson' => $lesson
-            ]
+            <<<END
+            Bonjour [user:first_name],
+            
+            La reservation du [lesson:start_date] de [lesson:start_time] à [lesson:end_time] avec [lesson:instructor_name] a bien été prise en compte!
+            Voici votre point de rendez-vous: [lesson:meeting_point].
+            
+            Bien cordialement,
+            
+            L'équipe Ornikar
+            END
         );
 
-        $this->assertEquals('Votre leçon de conduite avec ' . $expectedInstructor->firstname, $message->subject);
-        $this->assertEquals("
-Bonjour Toto,
+        $message = (new TemplateManager())->getTemplateComputed($template, ['lesson' => $lesson]);
 
-La reservation du 01/01/2021 de 12:00 à 13:00 avec " . $expectedInstructor->firstname . " a bien été prise en compte!
-Voici votre point de rendez-vous: " . $expectedMeetingPoint->name . ".
+        $this->assertEquals('Votre leçon de conduite avec jean', $message->subject);
+        $this->assertEquals(
+            <<<END
+            Bonjour Toto,
+            
+            La reservation du 01/01/2021 de 12:00 à 13:00 avec jean a bien été prise en compte!
+            Voici votre point de rendez-vous: paris 5eme.
+            
+            Bien cordialement,
+            
+            L'équipe Ornikar
+            END,
+            $message->content
+        );
+    }
 
-Bien cordialement,
+    public function setUp(): void
+    {
+        parent::setUp();
 
-L'équipe Ornikar
-", $message->content);
+        ApplicationContext::getInstance()
+            ->setCurrentUser(new Learner(1, "toto", "bob", "toto@bob.to"));
+    }
+
+    private function createLesson(
+        MeetingPoint $meetingPoint,
+        Instructor $instructor,
+        string $startAt,
+        string $endAt
+    ): Lesson {
+        MeetingPointRepository::getInstance()->save($meetingPoint);
+        InstructorRepository::getInstance()->save($instructor);
+
+        LessonRepository::getInstance()->save(
+            $lesson = new Lesson(1, $meetingPoint->id, $instructor->id, new DateTime($startAt), new DateTime($endAt))
+        );
+
+        return $lesson;
     }
 }

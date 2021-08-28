@@ -38,4 +38,14 @@ class Lesson
     {
         return $this->meetingPointId !== 0;
     }
+
+    public function getStartDate(): string
+    {
+        return $this->start_time->format('d/m/Y');
+    }
+
+    public function getStartTime(): string
+    {
+        return $this->start_time->format('H:i');
+    }
 }

@@ -6,6 +6,7 @@ use App\Context\ApplicationContext;
 use App\Entity\Instructor;
 use App\Entity\Learner;
 use App\Entity\Lesson;
+use App\Entity\Placeholder;
 use App\Entity\Template;
 use App\Repository\InstructorRepository;
 use App\Repository\MeetingPointRepository;
@@ -35,8 +36,36 @@ class TemplateManager
         return $computedTemplate;
     }
 
+    /**
+     * @return Placeholder[]
+     */
+    private function findPlaceholders(string $text): array
+    {
+        $placeholders = [];
+
+        preg_match_all('/\[(?:([a-z]+):)?([a-z_]+)]/', $text, $matches);
+
+        foreach ($matches[0] as $key => $match) {
+            $placeholders[] = new Placeholder($matches[1][$key], $matches[2][$key]);
+        }
+
+        return $placeholders;
+    }
+
     private function computeText($text, array $data): string
     {
+        foreach ($this->findPlaceholders($text) as $placeholder) {
+            $object = $data[$placeholder->objectName] ?? null;
+
+            if ($object && method_exists($object, $placeholder->getMethodName())) {
+                $text = str_replace(
+                    $placeholder,
+                    $data[$placeholder->objectName]->{$placeholder->getMethodName()}(),
+                    $text
+                );
+            }
+        }
+
         $lesson = $data['lesson'] ?: null;
 
         if ($lesson instanceof Lesson) {
@@ -50,14 +79,10 @@ class TemplateManager
         }
 
         return str_replace([
-            '[lesson:start_date]',
-            '[lesson:start_time]',
             '[lesson:end_time]',
             '[instructor_link]',
             '[user:first_name]',
         ], [
-            $lesson->start_time->format('d/m/Y'),
-            $lesson->start_time->format('H:i'),
             $lesson->end_time->format('H:i'),
             $this->getInstructorLink($data),
             $this->getUserFirstName($data)

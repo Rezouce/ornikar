@@ -5,25 +5,24 @@ namespace App;
 use App\Context\ApplicationContext;
 use App\Entity\Placeholder;
 use App\Entity\Template;
-use App\Repository\InstructorRepository;
-use App\Repository\MeetingPointRepository;
 use ReflectionClass;
 use ReflectionMethod;
 
 class TemplateManager
 {
     private ApplicationContext $applicationContext;
-    private MeetingPointRepository $meetingPointRepository;
-    private InstructorRepository $instructorRepository;
+    private array $dependencies;
 
-    public function __construct(
-        ApplicationContext $applicationContext,
-        MeetingPointRepository $meetingPointRepository,
-        InstructorRepository $instructorRepository
-    ) {
+    public function __construct(ApplicationContext $applicationContext)
+    {
         $this->applicationContext = $applicationContext;
-        $this->meetingPointRepository = $meetingPointRepository;
-        $this->instructorRepository = $instructorRepository;
+    }
+
+    public function addDependency($dependency): self
+    {
+        $this->dependencies[get_class($dependency)] = $dependency;
+
+        return $this;
     }
 
     public function getTemplateComputed(Template $template, array $data): Template
@@ -88,10 +87,7 @@ class TemplateManager
 
     private function getDependency(ReflectionClass $reflectionClass)
     {
-        return [
-            MeetingPointRepository::class => $this->meetingPointRepository,
-            InstructorRepository::class => $this->instructorRepository,
-        ][$reflectionClass->getName()] ?: null;
+        return $this->dependencies[$reflectionClass->getName()] ?: null;
     }
 
     private function resolvePlaceholderValue($object, string $methodName): string

@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\InstructorRepository;
+use App\Repository\MeetingPointRepository;
 use DateTime;
 
 class Lesson
@@ -37,11 +38,6 @@ class Lesson
         return '<p>' . $this->id . '</p>';
     }
 
-    public function hasMeetingPoint(): bool
-    {
-        return $this->meetingPointId !== 0;
-    }
-
     public function getStartDate(): string
     {
         return $this->start_time->format('d/m/Y');
@@ -65,5 +61,10 @@ class Lesson
     public function getInstructorLink(InstructorRepository $repository): string
     {
         return $repository->getById($this->instructorId)->getLink();
+    }
+
+    public function getMeetingPoint(MeetingPointRepository $repository): string
+    {
+        return $repository->getById($this->meetingPointId)->getName();
     }
 }

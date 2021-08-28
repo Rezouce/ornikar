@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -13,5 +13,10 @@ class MeetingPoint
         $this->id = $id;
         $this->url = $url;
         $this->name = $name;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 }

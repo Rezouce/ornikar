@@ -79,14 +79,6 @@ class TemplateManager
             }
         }
 
-        $lesson = $data['lesson'] ?: null;
-
-        if ($lesson->hasMeetingPoint() && strpos($text, '[lesson:meeting_point]') !== false) {
-            $meetingPoint = $this->meetingPointRepository->getById($lesson->meetingPointId);
-
-            $text = str_replace('[lesson:meeting_point]', $meetingPoint->name, $text);
-        }
-
         return str_replace('[instructor_link]', $this->getInstructorLink($data), $text);
     }
 

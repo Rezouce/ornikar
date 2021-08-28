@@ -9,6 +9,20 @@ use ReflectionClass;
 use ReflectionMethod;
 use RuntimeException;
 
+/**
+ * This class allow to compute a template. It will replace each found placeholder by its matching value
+ * in the provided data.
+ *
+ * For example, if your template contains a [lesson:instructor_name], the TemplateManager object will
+ * look for a key named 'lesson' in the provided array $data. When found, it will call on it the getter
+ * 'getInstructorName()'.
+ *
+ * If a getter has a dependency (eg. the Lesson::getInstructorName() requires a IntructorRepository object),
+ * you need to inject this dependency to the TemplateManager using the addDependency method.
+ *
+ * If a template has a [user:xxx] placeholder but no user data is provided, the TemplateManager will
+ * assume we're using the current user (provided by the ApplicationContext object).
+ */
 class TemplateManager
 {
     private ApplicationContext $applicationContext;

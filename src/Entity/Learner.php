@@ -1,24 +1,24 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Entity;
 
 class Learner
 {
     public int $id;
-    public string $firstname;
-    public string $lastname;
+    public string $firstName;
+    public string $lastName;
     public string $email;
 
-    public function __construct(int $id, string $firstname, string $lastname, string $email)
+    public function __construct(int $id, string $firstName, string $lastName, string $email)
     {
         $this->id = $id;
-        $this->firstname = $firstname;
-        $this->lastname = $lastname;
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
         $this->email = $email;
     }
 
     public function getFirstName(): string
     {
-        return ucfirst(strtolower($this->firstname));
+        return ucfirst(strtolower($this->firstName));
     }
 }

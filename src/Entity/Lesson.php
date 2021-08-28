@@ -11,8 +11,8 @@ class Lesson
     public int $id;
     public int $meetingPointId;
     public int $instructorId;
-    public DateTime $start_time;
-    public DateTime $end_time;
+    public DateTime $startTime;
+    public DateTime $endTime;
 
     public function __construct(
         int $id,
@@ -24,8 +24,8 @@ class Lesson
         $this->id = $id;
         $this->meetingPointId = $meetingPointId;
         $this->instructorId = $instructorId;
-        $this->start_time = $start_time;
-        $this->end_time = $end_time;
+        $this->startTime = $start_time;
+        $this->endTime = $end_time;
     }
 
     public function getSummary(): string
@@ -40,17 +40,17 @@ class Lesson
 
     public function getStartDate(): string
     {
-        return $this->start_time->format('d/m/Y');
+        return $this->startTime->format('d/m/Y');
     }
 
     public function getStartTime(): string
     {
-        return $this->start_time->format('H:i');
+        return $this->startTime->format('H:i');
     }
 
     public function getEndTime(): string
     {
-        return $this->end_time->format('H:i');
+        return $this->endTime->format('H:i');
     }
 
     public function getInstructorName(InstructorRepository $repository): string

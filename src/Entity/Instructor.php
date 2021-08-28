@@ -6,23 +6,23 @@ namespace App\Entity;
 class Instructor
 {
     public int $id;
-    public string $firstname;
-    public string $lastname;
+    public string $firstName;
+    public string $lastName;
 
-    public function __construct(int $id, string $firstname, string $lastname)
+    public function __construct(int $id, string $firstName, string $lastName)
     {
         $this->id = $id;
-        $this->firstname = $firstname;
-        $this->lastname = $lastname;
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
     }
 
     public function getName(): string
     {
-        return $this->firstname;
+        return $this->firstName;
     }
 
     public function getLink(): string
     {
-        return 'instructors/' . $this->id . '-' . urlencode($this->firstname);
+        return 'instructors/' . $this->id . '-' . urlencode($this->firstName);
     }
 }

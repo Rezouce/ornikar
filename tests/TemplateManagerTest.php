@@ -40,7 +40,7 @@ class TemplateManagerTest extends TestCase
             END
         );
 
-        $message = (new TemplateManager(ApplicationContext::getInstance()))
+        $message = $this->getTemplateManager()
             ->getTemplateComputed($template, ['lesson' => $lesson]);
 
         $this->assertEquals('Votre leçon de conduite avec jean', $message->subject);
@@ -77,5 +77,14 @@ class TemplateManagerTest extends TestCase
         InstructorRepository::getInstance()->save($instructor);
 
         return new Lesson(1, $meetingPoint->id, $instructor->id, new DateTime($startAt), new DateTime($endAt));
+    }
+
+    private function getTemplateManager(): TemplateManager
+    {
+        return new TemplateManager(
+            ApplicationContext::getInstance(),
+            MeetingPointRepository::getInstance(),
+            InstructorRepository::getInstance()
+        );
     }
 }

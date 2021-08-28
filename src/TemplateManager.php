@@ -13,10 +13,17 @@ use App\Repository\MeetingPointRepository;
 class TemplateManager
 {
     private ApplicationContext $applicationContext;
+    private MeetingPointRepository $meetingPointRepository;
+    private InstructorRepository $instructorRepository;
 
-    public function __construct(ApplicationContext $applicationContext)
-    {
+    public function __construct(
+        ApplicationContext $applicationContext,
+        MeetingPointRepository $meetingPointRepository,
+        InstructorRepository $instructorRepository
+    ) {
         $this->applicationContext = $applicationContext;
+        $this->meetingPointRepository = $meetingPointRepository;
+        $this->instructorRepository = $instructorRepository;
     }
 
     public function getTemplateComputed(Template $tpl, array $data): Template
@@ -37,7 +44,7 @@ class TemplateManager
         }
 
         if ($lesson->hasMeetingPoint() && strpos($text, '[lesson:meeting_point]') !== false) {
-            $meetingPoint = MeetingPointRepository::getInstance()->getById($lesson->meetingPointId);
+            $meetingPoint = $this->meetingPointRepository->getById($lesson->meetingPointId);
 
             $text = str_replace('[lesson:meeting_point]', $meetingPoint->name, $text);
         }
@@ -59,7 +66,7 @@ class TemplateManager
 
     private function computeLesson($text, Lesson $lesson): string
     {
-        $instructorOfLesson = InstructorRepository::getInstance()->getById($lesson->instructorId);
+        $instructorOfLesson = $this->instructorRepository->getById($lesson->instructorId);
 
         return str_replace([
             '[lesson:instructor_link]',

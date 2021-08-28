@@ -9,7 +9,6 @@ use App\Entity\Lesson;
 use App\Entity\MeetingPoint;
 use App\Entity\Template;
 use App\Repository\InstructorRepository;
-use App\Repository\LessonRepository;
 use App\Repository\MeetingPointRepository;
 use App\TemplateManager;
 use DateTime;
@@ -77,10 +76,6 @@ class TemplateManagerTest extends TestCase
         MeetingPointRepository::getInstance()->save($meetingPoint);
         InstructorRepository::getInstance()->save($instructor);
 
-        LessonRepository::getInstance()->save(
-            $lesson = new Lesson(1, $meetingPoint->id, $instructor->id, new DateTime($startAt), new DateTime($endAt))
-        );
-
-        return $lesson;
+        return new Lesson(1, $meetingPoint->id, $instructor->id, new DateTime($startAt), new DateTime($endAt));
     }
 }

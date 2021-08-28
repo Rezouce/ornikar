@@ -12,10 +12,6 @@ class PlaceholderTest extends TestCase
         $placeholder = new Placeholder('object', 'property');
 
         self::assertEquals('[object:property]', (string)$placeholder);
-
-        $placeholder = new Placeholder('', 'property');
-
-        self::assertEquals('[property]', (string)$placeholder);
     }
 
     public function test_it_can_return_the_getter_to_use_to_get_the_object_formatted_property(): void

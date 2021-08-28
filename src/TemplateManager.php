@@ -69,7 +69,7 @@ class TemplateManager
     {
         $placeholders = [];
 
-        preg_match_all('/\[(?:([a-z]+):)?([a-z_]+)]/', $text, $matches);
+        preg_match_all('/\[([a-z]+):([a-z_]+)]/', $text, $matches);
 
         foreach ($matches[0] as $key => $match) {
             $placeholders[] = new Placeholder($matches[1][$key], $matches[2][$key]);

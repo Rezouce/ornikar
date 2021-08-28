@@ -20,8 +20,6 @@ class Placeholder
 
     public function __toString(): string
     {
-        return $this->objectName
-            ? sprintf('[%s:%s]', $this->objectName, $this->objectProperty)
-            : sprintf('[%s]', $this->objectProperty);
+        return sprintf('[%s:%s]', $this->objectName, $this->objectProperty);
     }
 }

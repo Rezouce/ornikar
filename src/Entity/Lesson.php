@@ -33,4 +33,9 @@ class Lesson
     {
         return (string)$lesson->id;
     }
+
+    public function hasMeetingPoint(): bool
+    {
+        return $this->meetingPointId !== 0;
+    }
 }

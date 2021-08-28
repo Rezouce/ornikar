@@ -39,6 +39,15 @@ class TemplateManager
         return $computedTemplate;
     }
 
+    private function computeText($text, array $data): string
+    {
+        foreach ($this->findPlaceholders($text) as $placeholder) {
+            $text = $this->replacePlaceholderByItsValue($placeholder, $text, $data);
+        }
+
+        return $text;
+    }
+
     /**
      * @return Placeholder[]
      */
@@ -55,42 +64,27 @@ class TemplateManager
         return $placeholders;
     }
 
-    private function computeText($text, array $data): string
+    private function replacePlaceholderByItsValue(Placeholder $placeholder, $text, array $data): string
     {
-        foreach ($this->findPlaceholders($text) as $placeholder) {
-            if (!isset($data[$placeholder->objectName])) {
-                throw new RuntimeException(
-                    sprintf('The data "%s" is missing.', $placeholder->objectName)
-                );
-            }
-
-            if (!method_exists($data[$placeholder->objectName], $placeholder->getMethodName())) {
-                throw new RuntimeException(sprintf(
-                    'The data "%s" is missing a getter named "%s".',
-                    $placeholder->objectName,
-                    $placeholder->getMethodName()
-                ));
-            }
-
-            $text = str_replace(
-                $placeholder,
-                $this->resolvePlaceholderValue($data[$placeholder->objectName], $placeholder->getMethodName()),
-                $text
-            );
-        }
-
-        return $text;
-    }
-
-    private function getDependency(ReflectionClass $reflectionClass)
-    {
-        if (!isset($this->dependencies[$reflectionClass->getName()])) {
+        if (!isset($data[$placeholder->objectName])) {
             throw new RuntimeException(
-                sprintf('The TemplateManager is missing the dependency %s', $reflectionClass->getName())
+                sprintf('The data "%s" is missing.', $placeholder->objectName)
             );
         }
 
-        return $this->dependencies[$reflectionClass->getName()];
+        if (!method_exists($data[$placeholder->objectName], $placeholder->getMethodName())) {
+            throw new RuntimeException(sprintf(
+                'The data "%s" is missing a getter named "%s".',
+                $placeholder->objectName,
+                $placeholder->getMethodName()
+            ));
+        }
+
+        return str_replace(
+            $placeholder,
+            $this->resolvePlaceholderValue($data[$placeholder->objectName], $placeholder->getMethodName()),
+            $text
+        );
     }
 
     private function resolvePlaceholderValue($object, string $methodName): string
@@ -104,5 +98,16 @@ class TemplateManager
         }
 
         return $reflection->invoke($object, ...$dependencies);
+    }
+
+    private function getDependency(ReflectionClass $reflectionClass)
+    {
+        if (!isset($this->dependencies[$reflectionClass->getName()])) {
+            throw new RuntimeException(
+                sprintf('The TemplateManager is missing the dependency %s', $reflectionClass->getName())
+            );
+        }
+
+        return $this->dependencies[$reflectionClass->getName()];
     }
 }

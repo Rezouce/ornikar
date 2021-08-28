@@ -1,21 +1,23 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Entity;
+
+use DateTime;
 
 class Lesson
 {
     public int $id;
     public int $meetingPointId;
     public int $instructorId;
-    public \DateTime $start_time;
-    public \DateTime $end_time;
+    public DateTime $start_time;
+    public DateTime $end_time;
 
     public function __construct(
         int $id,
         int $meetingPointId,
         int $instructorId,
-        \DateTime $start_time,
-        \DateTime $end_time
+        DateTime $start_time,
+        DateTime $end_time
     ) {
         $this->id = $id;
         $this->meetingPointId = $meetingPointId;
@@ -24,14 +26,14 @@ class Lesson
         $this->end_time = $end_time;
     }
 
-    public static function renderHtml(Lesson $lesson): string
+    public function getSummary(): string
     {
-        return '<p>' . $lesson->id . '</p>';
+        return (string)$this->id;
     }
 
-    public static function renderText(Lesson $lesson): string
+    public function getSummaryHtml(): string
     {
-        return (string)$lesson->id;
+        return '<p>' . $this->id . '</p>';
     }
 
     public function hasMeetingPoint(): bool
@@ -47,5 +49,10 @@ class Lesson
     public function getStartTime(): string
     {
         return $this->start_time->format('H:i');
+    }
+
+    public function getEndTime(): string
+    {
+        return $this->end_time->format('H:i');
     }
 }

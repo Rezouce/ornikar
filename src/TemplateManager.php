@@ -4,7 +4,6 @@ namespace App;
 
 use App\Context\ApplicationContext;
 use App\Entity\Instructor;
-use App\Entity\Learner;
 use App\Entity\Lesson;
 use App\Entity\Placeholder;
 use App\Entity\Template;
@@ -54,6 +53,10 @@ class TemplateManager
 
     private function computeText($text, array $data): string
     {
+        if (!isset($data['user'])) {
+            $data['user'] = $this->applicationContext->getCurrentUser();
+        }
+
         foreach ($this->findPlaceholders($text) as $placeholder) {
             $object = $data[$placeholder->objectName] ?? null;
 
@@ -78,15 +81,7 @@ class TemplateManager
             $text = str_replace('[lesson:meeting_point]', $meetingPoint->name, $text);
         }
 
-        return str_replace([
-            '[lesson:end_time]',
-            '[instructor_link]',
-            '[user:first_name]',
-        ], [
-            $lesson->end_time->format('H:i'),
-            $this->getInstructorLink($data),
-            $this->getUserFirstName($data)
-        ], $text);
+        return str_replace('[instructor_link]', $this->getInstructorLink($data), $text);
     }
 
     private function computeLesson($text, Lesson $lesson): string
@@ -96,13 +91,9 @@ class TemplateManager
         return str_replace([
             '[lesson:instructor_link]',
             '[lesson:instructor_name]',
-            '[lesson:summary_html]',
-            '[lesson:summary]',
         ], [
             $this->getInstructorLink(['instructor' => $instructor]),
             $this->getInstructorFirstName(['instructor' => $instructor]),
-            Lesson::renderHtml($lesson),
-            Lesson::renderText($lesson),
         ], $text);
     }
 
@@ -118,14 +109,5 @@ class TemplateManager
         return ($data['instructor'] ?? null) instanceof Instructor
             ? $data['instructor']->firstname
             : '';
-    }
-
-    private function getUserFirstName(array $data): string
-    {
-        $user = ($data['user'] ?? null) instanceof Learner
-            ? $data['user']
-            : $this->applicationContext->getCurrentUser();
-
-        return ucfirst(strtolower($user->firstname));
     }
 }
